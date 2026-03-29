@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infinity Knowledge Base — AI Agent</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="20" fill="url(#grad1)"/>
+            <path d="M12 20c0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M20 12v16M12 20h16" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            <circle cx="20" cy="20" r="3" fill="white"/>
+            <defs>
+              <linearGradient id="grad1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#8b5cf6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <span class="logo-title">Infinity</span>
+          <span class="logo-sub">Knowledge Base</span>
+        </div>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-page="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-page="knowledge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        <span>Knowledge Base</span>
+      </button>
+      <button class="nav-item" data-page="chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        <span>AI Chat</span>
+      </button>
+      <button class="nav-item" data-page="add">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span>Add Knowledge</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="ai-status" id="aiStatus">
+        <div class="status-dot"></div>
+        <span>AI Status</span>
+      </div>
+      <div class="gemini-badge">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14">
+          <path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="currentColor"/>
+        </svg>
+        Powered by Gemini
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ── -->
+  <main class="main" id="main">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-search">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="globalSearch" placeholder="Search knowledge base..." />
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-icon" id="refreshBtn" title="Refresh">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        </button>
+        <div class="user-avatar">∞</div>
+      </div>
+    </header>
+
+    <!-- ── Dashboard Page ── -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Your AI-powered knowledge management hub</p>
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-icon stat-icon--purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value" id="totalEntries">0</div>
+            <div class="stat-label">Knowledge Entries</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon--blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value" id="totalChats">0</div>
+            <div class="stat-label">AI Conversations</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon--green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value" id="totalCategories">0</div>
+            <div class="stat-label">Categories</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon--orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          </div>
+          <div class="stat-info">
+            <div class="stat-value" id="totalTags">0</div>
+            <div class="stat-label">Unique Tags</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card" id="recentEntriesCard">
+          <div class="card-header">
+            <h3>Recent Entries</h3>
+            <button class="btn btn-sm btn-ghost" data-page="knowledge" onclick="navigateTo('knowledge')">View All →</button>
+          </div>
+          <div class="card-body" id="recentEntriesList">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+              <p>No knowledge entries yet</p>
+              <button class="btn btn-sm btn-primary" onclick="navigateTo('add')">Add First Entry</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="categoriesCard">
+          <div class="card-header">
+            <h3>Categories</h3>
+          </div>
+          <div class="card-body" id="categoriesList">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <p>No categories yet</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card--wide" id="quickChatCard">
+          <div class="card-header">
+            <h3>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:6px"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Quick AI Ask
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="quick-chat">
+              <div class="quick-chat-suggestions" id="quickSuggestions">
+                <p class="suggestions-label">Try asking:</p>
+                <div class="suggestion-chips" id="suggestionChips">
+                  <button class="chip" onclick="quickAsk('Summarize my knowledge base')">Summarize my knowledge base</button>
+                  <button class="chip" onclick="quickAsk('What topics do I have?')">What topics do I have?</button>
+                  <button class="chip" onclick="quickAsk('What should I learn next?')">What should I learn next?</button>
+                </div>
+              </div>
+              <div class="quick-chat-input">
+                <input type="text" id="quickChatInput" placeholder="Ask anything about your knowledge base..." />
+                <button class="btn btn-primary" id="quickChatBtn">Ask AI</button>
+              </div>
+              <div id="quickChatResponse" class="quick-response" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="topTagsCard">
+          <div class="card-header">
+            <h3>Top Tags</h3>
+          </div>
+          <div class="card-body" id="topTagsList">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              <p>No tags yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Knowledge Base Page ── -->
+    <section class="page" id="page-knowledge">
+      <div class="page-header">
+        <div>
+          <h1>Knowledge Base</h1>
+          <p>Browse and manage your knowledge entries</p>
+        </div>
+        <button class="btn btn-primary" onclick="navigateTo('add')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Entry
+        </button>
+      </div>
+
+      <div class="kb-toolbar">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="kbSearch" placeholder="Search entries..." />
+        </div>
+        <select id="kbCategory" class="filter-select">
+          <option value="All">All Categories</option>
+          <option value="Technology">Technology</option>
+          <option value="Science">Science</option>
+          <option value="Business">Business</option>
+          <option value="Health">Health</option>
+          <option value="Education">Education</option>
+          <option value="Arts">Arts</option>
+          <option value="General">General</option>
+        </select>
+        <div class="view-toggle">
+          <button class="view-btn active" id="gridViewBtn" title="Grid view">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="view-btn" id="listViewBtn" title="List view">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="kb-entries" id="kbEntries">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          <p>Loading knowledge base...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AI Chat Page ── -->
+    <section class="page" id="page-chat">
+      <div class="page-header">
+        <div>
+          <h1>AI Agent Chat</h1>
+          <p>Chat with your personal AI powered by Gemini</p>
+        </div>
+        <div class="chat-options">
+          <label class="toggle-label">
+            <input type="checkbox" id="groundingToggle" />
+            <span class="toggle-switch"></span>
+            <span>Web Search</span>
+          </label>
+          <button class="btn btn-ghost btn-sm" id="clearChatBtn">Clear Chat</button>
+        </div>
+      </div>
+
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-welcome">
+            <div class="welcome-icon">
+              <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="20" fill="url(#wgrad)"/>
+                <path d="M20 10l-2 6H12l5 4-2 6 5-4 5 4-2-6 5-4h-6l-2-6z" fill="white"/>
+                <defs>
+                  <linearGradient id="wgrad" x1="0" y1="0" x2="40" y2="40">
+                    <stop offset="0%" stop-color="#6366f1"/>
+                    <stop offset="100%" stop-color="#8b5cf6"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <h2>Infinity AI Agent</h2>
+            <p>I'm your personal AI assistant with access to your entire knowledge base. Ask me anything!</p>
+            <div class="welcome-chips">
+              <button class="chip" onclick="sendChat('What do you know about my knowledge base?')">What's in my knowledge base?</button>
+              <button class="chip" onclick="sendChat('Give me a summary of all topics')">Summarize all topics</button>
+              <button class="chip" onclick="sendChat('What are the key concepts I should remember?')">Key concepts to remember</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input-area">
+          <div id="chatTypingIndicator" class="typing-indicator" style="display:none">
+            <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+            <span>AI is thinking...</span>
+          </div>
+          <div class="chat-input-wrapper">
+            <textarea id="chatInput" placeholder="Ask anything... (Enter to send, Shift+Enter for new line)" rows="1"></textarea>
+            <button class="btn btn-primary chat-send-btn" id="chatSendBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+          <p class="chat-hint">Powered by Gemini 2.0 Flash · <span id="entryCountHint">0</span> knowledge entries loaded</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Add/Edit Knowledge Page ── -->
+    <section class="page" id="page-add">
+      <div class="page-header">
+        <div>
+          <h1 id="addPageTitle">Add Knowledge Entry</h1>
+          <p>Expand your knowledge base manually or with AI</p>
+        </div>
+        <button class="btn btn-ghost" onclick="navigateTo('knowledge')">← Back to Knowledge Base</button>
+      </div>
+
+      <div class="add-layout">
+        <div class="add-form-card card">
+          <div class="card-header">
+            <h3>Entry Details</h3>
+            <div class="ai-generate-btn">
+              <input type="text" id="generateTopic" placeholder="Enter a topic..." />
+              <button class="btn btn-secondary" id="generateBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z"/></svg>
+                Generate with AI
+              </button>
+            </div>
+          </div>
+          <form id="entryForm" class="entry-form">
+            <input type="hidden" id="editEntryId" />
+
+            <div class="form-group">
+              <label for="entryTitle">Title *</label>
+              <input type="text" id="entryTitle" placeholder="E.g., Introduction to Machine Learning" required />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="entryCategory">Category</label>
+                <select id="entryCategory">
+                  <option value="General">General</option>
+                  <option value="Technology">Technology</option>
+                  <option value="Science">Science</option>
+                  <option value="Business">Business</option>
+                  <option value="Health">Health</option>
+                  <option value="Education">Education</option>
+                  <option value="Arts">Arts</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="entryTags">Tags (comma-separated)</label>
+                <input type="text" id="entryTags" placeholder="E.g., AI, machine learning, neural networks" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="entryContent">Content *</label>
+              <div class="editor-toolbar">
+                <button type="button" class="editor-btn" onclick="insertMarkdown('**', '**')"><strong>B</strong></button>
+                <button type="button" class="editor-btn" onclick="insertMarkdown('*', '*')"><em>I</em></button>
+                <button type="button" class="editor-btn" onclick="insertMarkdown('# ', '')">H1</button>
+                <button type="button" class="editor-btn" onclick="insertMarkdown('## ', '')">H2</button>
+                <button type="button" class="editor-btn" onclick="insertMarkdown('- ', '')">List</button>
+                <button type="button" class="editor-btn" onclick="insertMarkdown('```\n', '\n```')">Code</button>
+                <button type="button" class="editor-btn" onclick="insertMarkdown('> ', '')">Quote</button>
+              </div>
+              <textarea id="entryContent" placeholder="Write your knowledge entry here... Markdown is supported!" rows="12" required></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" onclick="resetForm()">Reset</button>
+              <button type="submit" class="btn btn-primary" id="saveEntryBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Entry
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="add-preview-card card">
+          <div class="card-header">
+            <h3>Preview</h3>
+            <span class="badge" id="previewBadge">Draft</span>
+          </div>
+          <div class="card-body preview-content" id="entryPreview">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <p>Preview will appear as you type</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Entry Detail Modal ── -->
+  <div class="modal-overlay" id="entryModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <span class="badge" id="modalCategory">General</span>
+          <h2 id="modalTitle">Entry Title</h2>
+        </div>
+        <button class="btn-icon" id="closeModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-meta">
+        <span id="modalTags"></span>
+        <span id="modalDate"></span>
+        <span id="modalViews"></span>
+      </div>
+      <div class="modal-body">
+        <div id="modalContent" class="markdown-content"></div>
+        <div id="modalSummary" class="ai-summary" style="display:none">
+          <div class="ai-summary-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z"/></svg>
+            AI Summary
+          </div>
+          <p id="modalSummaryText"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost btn-sm" id="modalSummarizeBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z"/></svg>
+          Summarize with AI
+        </button>
+        <button class="btn btn-ghost btn-sm" id="modalChatBtn">Ask AI about this</button>
+        <button class="btn btn-secondary btn-sm" id="modalEditBtn">Edit</button>
+        <button class="btn btn-danger btn-sm" id="modalDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast Notification ── -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ── Loading Overlay ── -->
+  <div class="loading-overlay" id="loadingOverlay" style="display:none">
+    <div class="spinner spinner--large"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
