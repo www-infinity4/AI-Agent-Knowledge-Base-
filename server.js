@@ -392,6 +392,10 @@ app.get('/api/status', apiLimiter, (req, res) => {
 });
 
 // ── Serve SPA ─────────────────────────────────────────────────────────────────
+app.get('/', apiLimiter, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.get('*', apiLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
