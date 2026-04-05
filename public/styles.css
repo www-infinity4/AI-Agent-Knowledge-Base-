@@ -568,13 +568,45 @@ input, textarea, select {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 9px 12px 9px 38px;
+  padding: 9px 36px 9px 38px;
   color: var(--text-primary);
   font-size: 0.875rem;
   transition: border-color var(--transition);
 }
 .search-box input:focus { border-color: var(--accent); }
 .search-box input::placeholder { color: var(--text-muted); }
+
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: color var(--transition);
+}
+.search-clear-btn svg { width: 14px; height: 14px; }
+.search-clear-btn:hover { color: var(--text-primary); }
+
+.kb-result-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.search-highlight {
+  background: rgba(99, 102, 241, 0.25);
+  color: var(--accent);
+  border-radius: 2px;
+  padding: 0 1px;
+  font-weight: 600;
+}
 
 .filter-select {
   background: var(--bg-card);

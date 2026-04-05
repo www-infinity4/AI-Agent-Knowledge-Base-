@@ -177,9 +177,31 @@ function renderTopTags(tags) {
 }
 
 // ── Knowledge Base ────────────────────────────────────────────────────────────
+function sortEntries(entries, sort) {
+  const arr = [...entries];
+  switch (sort) {
+    case 'oldest': return arr.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    case 'az':     return arr.sort((a, b) => a.title.localeCompare(b.title));
+    case 'za':     return arr.sort((a, b) => b.title.localeCompare(a.title));
+    case 'views':  return arr.sort((a, b) => (b.views || 0) - (a.views || 0));
+    default:       return arr.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // newest
+  }
+}
+
+function highlightText(text, term) {
+  if (!term) return escapeHtml(text);
+  const escaped = escapeHtml(text);
+  const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return escaped.replace(new RegExp(`(${escapedTerm})`, 'gi'), '<mark class="search-highlight">$1</mark>');
+}
+
 async function loadKnowledgeBase(search = '', category = 'All') {
   const container = document.getElementById('kbEntries');
   container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Loading...</p></div>';
+
+  // Show/hide clear button
+  const clearBtn = document.getElementById('kbSearchClear');
+  if (clearBtn) clearBtn.style.display = search ? 'flex' : 'none';
 
   try {
     const params = new URLSearchParams();
@@ -187,14 +209,31 @@ async function loadKnowledgeBase(search = '', category = 'All') {
     if (category && category !== 'All') params.set('category', category);
     const res = await api.get(`/api/knowledge?${params}`);
     state.entries = res.entries || [];
-    renderKnowledgeBase(state.entries);
+
+    // Sort according to the current sort control value
+    const sortVal = document.getElementById('kbSort')?.value || 'newest';
+    const sorted = sortEntries(state.entries, sortVal);
+
+    renderKnowledgeBase(sorted, search);
   } catch (err) {
     container.innerHTML = '<div class="empty-state"><p>Failed to load knowledge base</p></div>';
   }
 }
 
-function renderKnowledgeBase(entries) {
+function renderKnowledgeBase(entries, search = '') {
   const container = document.getElementById('kbEntries');
+  const resultCountEl = document.getElementById('kbResultCount');
+
+  // Show result count when filtering
+  if (resultCountEl) {
+    if (search || document.getElementById('kbCategory')?.value !== 'All') {
+      resultCountEl.textContent = `${entries.length} entr${entries.length === 1 ? 'y' : 'ies'} found`;
+      resultCountEl.style.display = 'block';
+    } else {
+      resultCountEl.style.display = 'none';
+    }
+  }
+
   if (state.kbViewMode === 'list') {
     container.classList.add('list-view');
   } else {
@@ -210,14 +249,19 @@ function renderKnowledgeBase(entries) {
     return;
   }
 
+  const excerpt = (content) => {
+    const plain = content.substring(0, 200);
+    return search ? highlightText(plain, search) : escapeHtml(plain);
+  };
+
   container.innerHTML = entries.map(e => `
     <div class="entry-card" onclick="openEntryModal('${e.id}')">
       <div class="entry-card-header">
-        <div class="entry-card-title">${escapeHtml(e.title)}</div>
+        <div class="entry-card-title">${highlightText(e.title, search)}</div>
         <span class="entry-card-category">${escapeHtml(e.category || 'General')}</span>
       </div>
-      <div class="entry-card-excerpt">${escapeHtml(e.content.substring(0, 200))}</div>
-      ${e.tags && e.tags.length ? `<div class="entry-card-tags">${e.tags.slice(0, 4).map(t => `<span class="entry-tag">#${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+      <div class="entry-card-excerpt">${excerpt(e.content)}</div>
+      ${e.tags && e.tags.length ? `<div class="entry-card-tags">${e.tags.slice(0, 4).map(t => `<span class="entry-tag">#${highlightText(t, search)}</span>`).join('')}</div>` : ''}
       <div class="entry-card-footer">
         <span>${formatDate(e.createdAt)}</span>
         <div class="entry-card-actions" onclick="event.stopPropagation()">
@@ -595,7 +639,10 @@ async function quickAsk(message) {
 function filterByTag(tag) {
   navigateTo('knowledge');
   setTimeout(() => {
-    document.getElementById('kbSearch').value = tag;
+    const searchEl = document.getElementById('kbSearch');
+    searchEl.value = tag;
+    const clearBtn = document.getElementById('kbSearchClear');
+    if (clearBtn) clearBtn.style.display = 'flex';
     loadKnowledgeBase(tag);
   }, 100);
 }
@@ -762,10 +809,20 @@ document.addEventListener('DOMContentLoaded', () => {
   let kbSearchTimeout;
   document.getElementById('kbSearch').addEventListener('input', (e) => {
     clearTimeout(kbSearchTimeout);
+    const clearBtn = document.getElementById('kbSearchClear');
+    if (clearBtn) clearBtn.style.display = e.target.value ? 'flex' : 'none';
     kbSearchTimeout = setTimeout(() => {
       const cat = document.getElementById('kbCategory').value;
       loadKnowledgeBase(e.target.value, cat);
     }, 350);
+  });
+
+  document.getElementById('kbSearchClear').addEventListener('click', () => {
+    document.getElementById('kbSearch').value = '';
+    document.getElementById('kbSearchClear').style.display = 'none';
+    const cat = document.getElementById('kbCategory').value;
+    loadKnowledgeBase('', cat);
+    document.getElementById('kbSearch').focus();
   });
 
   document.getElementById('kbCategory').addEventListener('change', (e) => {
@@ -773,19 +830,27 @@ document.addEventListener('DOMContentLoaded', () => {
     loadKnowledgeBase(search, e.target.value);
   });
 
+  document.getElementById('kbSort').addEventListener('change', (e) => {
+    const search = document.getElementById('kbSearch').value;
+    const sorted = sortEntries(state.entries, e.target.value);
+    renderKnowledgeBase(sorted, search);
+  });
+
   // View toggle
   document.getElementById('gridViewBtn').addEventListener('click', () => {
     state.kbViewMode = 'grid';
     document.getElementById('gridViewBtn').classList.add('active');
     document.getElementById('listViewBtn').classList.remove('active');
-    renderKnowledgeBase(state.entries);
+    const search = document.getElementById('kbSearch').value;
+    renderKnowledgeBase(state.entries, search);
   });
 
   document.getElementById('listViewBtn').addEventListener('click', () => {
     state.kbViewMode = 'list';
     document.getElementById('listViewBtn').classList.add('active');
     document.getElementById('gridViewBtn').classList.remove('active');
-    renderKnowledgeBase(state.entries);
+    const search = document.getElementById('kbSearch').value;
+    renderKnowledgeBase(state.entries, search);
   });
 
   // Chat
