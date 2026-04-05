@@ -219,7 +219,10 @@
       <div class="kb-toolbar">
         <div class="search-box">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="kbSearch" placeholder="Search entries..." />
+          <input type="text" id="kbSearch" placeholder="Search entries..." autocomplete="off" />
+          <button class="search-clear-btn" id="kbSearchClear" title="Clear search" aria-label="Clear search" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
         <select id="kbCategory" class="filter-select">
           <option value="All">All Categories</option>
@@ -231,6 +234,13 @@
           <option value="Arts">Arts</option>
           <option value="General">General</option>
         </select>
+        <select id="kbSort" class="filter-select">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="az">Title A → Z</option>
+          <option value="za">Title Z → A</option>
+          <option value="views">Most Viewed</option>
+        </select>
         <div class="view-toggle">
           <button class="view-btn active" id="gridViewBtn" title="Grid view">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -240,6 +250,7 @@
           </button>
         </div>
       </div>
+      <div class="kb-result-count" id="kbResultCount" style="display:none"></div>
 
       <div class="kb-entries" id="kbEntries">
         <div class="loading-spinner">
