@@ -110,3 +110,4 @@ The app features a sleek dark interface with:
 ## 📄 License
 
 MIT © Infinity AI
+<script src="https://www-infinity4.github.io/Mint-For-Infinity/infinity-wallet-menu.js" defer></script>
