@@ -1,6 +1,6 @@
 # Infinity Knowledge Base — AI Agent
 
-A full-stack knowledge management system with local knowledge synthesis, Node.js/Express, and a modern dark-themed UI. It requires no paid AI API, signup, credit card, or provider key.
+A full-stack knowledge management system using the existing Rogers AI gateway plus a local fallback, Node.js/Express, and a modern dark-themed UI. It does not ask users for an AI provider key, signup, credit card, or paid API.
 
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green?style=flat-square&logo=node.js)
 ![License](https://img.shields.io/badge/License-MIT-purple?style=flat-square)
@@ -8,8 +8,8 @@ A full-stack knowledge management system with local knowledge synthesis, Node.js
 ## ✨ Features
 
 - **📚 Knowledge Base Management** — Add, edit, delete, and search knowledge entries with categories and tags
-- **🤖 Local Knowledge Agent** — Ask questions against your saved knowledge base without an external AI service
-- **✨ Local Entry Drafting** — Start structured entries locally from any topic
+- **🤖 Rogers Knowledge Agent** — Ask questions against your saved knowledge base through the existing Rogers AI gateway
+- **✨ Rogers Entry Drafting** — Generate structured entries through the same Rogers AI path used by the Phi system
 - **🔍 AI Summarization** — Instantly summarize any knowledge entry with one click
 - **📊 Dashboard** — Visual overview with stats, recent entries, category breakdown, and quick AI chat
 - **🏷️ Tags & Categories** — Organize knowledge with flexible tagging and categorization
@@ -50,7 +50,7 @@ NODE_ENV=development
 ## 🏗️ Architecture
 
 ```
-├── server.js              # Express backend + local knowledge synthesis
+├── server.js              # Express backend + Rogers AI gateway + local fallback
 ├── public/
 │   ├── index.html         # Single-page application HTML
 │   ├── styles.css         # Dark theme CSS with animations
@@ -75,9 +75,9 @@ NODE_ENV=development
 | `POST` | `/api/chat/summarize` | Summarize an entry with AI |
 | `GET` | `/api/status` | Server health check |
 
-## 🤖 Local synthesis
+## 🤖 Rogers AI
 
-Chat, drafting, and summarization run from the saved knowledge entries. No external model account, API key, billing relationship, or card is required.
+Chat, drafting, and summarization route through the existing Rogers AI gateway. If Rogers is temporarily unavailable, read-only chat/summarization can fall back to local saved knowledge. The app never asks the user for an external model key or payment.
 
 ## 📸 Screenshots
 
@@ -90,7 +90,7 @@ The app features a sleek dark interface with:
 ## 🛠️ Tech Stack
 
 - **Backend:** Node.js, Express.js
-- **AI:** Local deterministic knowledge synthesis
+- **AI:** Rogers AI gateway with local fallback
 - **Frontend:** Vanilla HTML/CSS/JavaScript (no framework, zero build step)
 - **Storage:** JSON file-based persistence
 - **Fonts:** Inter + Space Grotesk
