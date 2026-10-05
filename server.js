@@ -58,32 +58,9 @@ function writeData(data) {
   fs.writeFileSync(KB_FILE, JSON.stringify(data, null, 2));
 }
 
-// ── Local knowledge synthesis — no external AI service ─────────────────────────\n\nfunction buildSystemPrompt(entries) {
-  const kbContext = entries.length > 0
-    ? entries.map((e, i) =>
-        `[${i + 1}] Title: ${e.title}\nCategory: ${e.category || 'General'}\nTags: ${(e.tags || []).join(', ') || 'none'}\nContent:\n${e.content}`
-      ).join('\n\n---\n\n')
-    : 'The knowledge base is currently empty.';
-
-  return `You are the Infinity Knowledge Base AI Agent — a highly intelligent, helpful assistant with access to a curated knowledge base.
-
-Your role is to:
-1. Answer questions accurately using the knowledge base entries provided below
-2. Synthesize information across multiple entries when relevant
-3. Clearly cite which knowledge base entry (by title) you're drawing from
-4. If a question isn't covered by the knowledge base, say so honestly and provide your best general answer
-5. Suggest relevant knowledge base entries the user might want to explore
-6. Help users understand and apply the knowledge in practical ways
-
-KNOWLEDGE BASE CONTENTS:
-========================
-${kbContext}
-========================
-
-Always be helpful, precise, and proactive. Format responses with markdown for clarity.`;
-}
-
 // ── Knowledge Base API ────────────────────────────────────────────────────────
+
+
 
 // GET /api/knowledge — list all entries
 app.get('/api/knowledge', apiLimiter, (req, res) => {
