@@ -5,7 +5,6 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
-const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -59,22 +58,7 @@ function writeData(data) {
   fs.writeFileSync(KB_FILE, JSON.stringify(data, null, 2));
 }
 
-// ── Gemini AI setup ───────────────────────────────────────────────────────────
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-let genAI = null;
-
-if (GEMINI_API_KEY && GEMINI_API_KEY !== 'your_gemini_api_key_here') {
-  genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-}
-
-const SAFETY_SETTINGS = [
-  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-];
-
-function buildSystemPrompt(entries) {
+// ── Local knowledge synthesis — no external AI service ─────────────────────────\n\nfunction buildSystemPrompt(entries) {
   const kbContext = entries.length > 0
     ? entries.map((e, i) =>
         `[${i + 1}] Title: ${e.title}\nCategory: ${e.category || 'General'}\nTags: ${(e.tags || []).join(', ') || 'none'}\nContent:\n${e.content}`
@@ -220,163 +204,65 @@ app.post('/api/knowledge/:id/view', apiLimiter, (req, res) => {
   res.json({ success: true, views: entry.views });
 });
 
-// ── AI Chat API ───────────────────────────────────────────────────────────────
-
-// POST /api/chat — send a message to Gemini AI
-app.post('/api/chat', aiLimiter, async (req, res) => {
-  const { message, history = [], useGrounding = false } = req.body;
-
-  if (!message || !message.trim()) {
-    return res.status(400).json({ success: false, error: 'Message is required' });
-  }
-
-  if (!genAI) {
-    return res.status(503).json({
-      success: false,
-      error: 'Gemini API key not configured. Please set GEMINI_API_KEY in your .env file.',
-      demo: true,
-    });
-  }
-
-  try {
-    const data = readData();
-    const entries = data.entries || [];
-    const systemInstruction = buildSystemPrompt(entries);
-
-    // Configure model — optionally enable Google Search grounding
-    const modelConfig = {
-      model: 'gemini-2.0-flash',
-      systemInstruction,
-      safetySettings: SAFETY_SETTINGS,
-    };
-
-    if (useGrounding) {
-      modelConfig.tools = [{ googleSearch: {} }];
-    }
-
-    const model = genAI.getGenerativeModel(modelConfig);
-
-    // Map prior history into Gemini format
-    const geminiHistory = (history || []).map(msg => ({
-      role: msg.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: msg.content }],
-    }));
-
-    const chat = model.startChat({ history: geminiHistory });
-    const result = await chat.sendMessage(message.trim());
-    const response = result.response;
-    const text = response.text();
-
-    // Extract grounding metadata if available
-    let groundingChunks = [];
-    try {
-      const meta = response.candidates?.[0]?.groundingMetadata;
-      if (meta?.groundingChunks) {
-        groundingChunks = meta.groundingChunks
-          .filter(c => c.web)
-          .map(c => ({ title: c.web.title, uri: c.web.uri }));
-      }
-    } catch (_) {
-      // grounding metadata not available
-    }
-
-    res.json({
-      success: true,
-      response: text,
-      groundingChunks,
-      model: 'gemini-2.0-flash',
-    });
-  } catch (err) {
-    console.error('Gemini API error:', err);
-    res.status(500).json({
-      success: false,
-      error: err.message || 'Failed to get AI response',
-    });
-  }
-});
-
-// POST /api/chat/generate — generate a knowledge entry using AI
-app.post('/api/chat/generate', aiLimiter, async (req, res) => {
-  const { topic } = req.body;
-
-  if (!topic || !topic.trim()) {
-    return res.status(400).json({ success: false, error: 'Topic is required' });
-  }
-
-  if (!genAI) {
-    return res.status(503).json({
-      success: false,
-      error: 'Gemini API key not configured.',
-      demo: true,
-    });
-  }
-
-  try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      safetySettings: SAFETY_SETTINGS,
-    });
-
-    const prompt = `Generate a comprehensive knowledge base entry about: "${topic.trim()}"
-
-Return a JSON object with exactly these fields:
-{
-  "title": "A clear, concise title for the topic",
-  "category": "One of: Technology, Science, Business, Health, Education, Arts, General",
-  "tags": ["tag1", "tag2", "tag3"],
-  "content": "A comprehensive, well-structured explanation with multiple paragraphs, covering key concepts, examples, and practical applications. Use markdown formatting."
+// ── Local knowledge synthesis API ─────────────────────────────────────────────
+const words = value => String(value || '').toLowerCase().match(/[a-z0-9]+/g) || [];
+const STOP = new Set('the a an and or but to of in on for with from by is are was were be been being this that these those it its as at about into your my our can could should would'.split(' '));
+function relevantEntries(entries, message, limit = 4) {
+  const q = new Set(words(message).filter(w => w.length > 2 && !STOP.has(w)));
+  return (entries || []).map(entry => {
+    const hay = words([entry.title, entry.category, ...(entry.tags || []), entry.content].join(' '));
+    const score = hay.reduce((n, word) => n + (q.has(word) ? 1 : 0), 0);
+    return { entry, score };
+  }).filter(x => x.score > 0).sort((a,b) => b.score - a.score).slice(0, limit).map(x => x.entry);
+}
+function localAnswer(entries, message) {
+  const matches = relevantEntries(entries, message);
+  if (!matches.length) return {
+    response: 'I could not find that topic in the current knowledge base. Add a relevant entry or search the existing collection with different terms.',
+    groundingChunks: []
+  };
+  const sections = matches.map(entry => {
+    const body = String(entry.content || '').replace(/\s+/g, ' ').trim();
+    return '**' + entry.title + '**\n' + body.slice(0, 900) + (body.length > 900 ? '…' : '');
+  });
+  return {
+    response: sections.join('\n\n') + '\n\nThese results were assembled locally from the saved knowledge base.',
+    groundingChunks: matches.map(entry => ({ title: entry.title, uri: 'local-kb:' + entry.id }))
+  };
+}
+function localEntry(topic) {
+  const clean = String(topic || '').trim();
+  return {
+    title: clean,
+    category: 'General',
+    tags: words(clean).filter(w => w.length > 3).slice(0, 5),
+    content: clean + ' is ready for local knowledge-base development. Add verified notes, examples, sources, and practical details here; the local assistant will use those saved entries without requiring a paid model or API key.'
+  };
+}
+function localSummary(content) {
+  const text = String(content || '').replace(/\s+/g, ' ').trim();
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+  return sentences.slice(0, 3).join(' ').trim().slice(0, 900);
 }
 
-Important: Return ONLY the JSON object, no markdown code blocks or extra text.`;
-
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().trim();
-
-    // Parse JSON — strip markdown fences if present
-    const cleaned = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
-    const entry = JSON.parse(cleaned);
-
-    res.json({ success: true, entry });
-  } catch (err) {
-    console.error('Generation error:', err);
-    res.status(500).json({
-      success: false,
-      error: err.message || 'Failed to generate entry',
-    });
-  }
+app.post('/api/chat', aiLimiter, (req, res) => {
+  const { message } = req.body;
+  if (!message || !message.trim()) return res.status(400).json({ success:false, error:'Message is required' });
+  const data = readData();
+  res.json({ success:true, ...localAnswer(data.entries || [], message), model:'local-knowledge-synthesis' });
 });
 
-// POST /api/chat/summarize — summarize a knowledge entry
-app.post('/api/chat/summarize', aiLimiter, async (req, res) => {
-  const { entryId } = req.body;
+app.post('/api/chat/generate', aiLimiter, (req, res) => {
+  const { topic } = req.body;
+  if (!topic || !topic.trim()) return res.status(400).json({ success:false, error:'Topic is required' });
+  res.json({ success:true, entry:localEntry(topic) });
+});
 
-  if (!genAI) {
-    return res.status(503).json({ success: false, error: 'Gemini API key not configured.', demo: true });
-  }
-
+app.post('/api/chat/summarize', aiLimiter, (req, res) => {
   const data = readData();
-  const entry = data.entries.find(e => e.id === entryId);
-  if (!entry) return res.status(404).json({ success: false, error: 'Entry not found' });
-
-  try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      safetySettings: SAFETY_SETTINGS,
-    });
-
-    const prompt = `Summarize the following knowledge base entry in 2-3 concise sentences that capture the key points:
-
-Title: ${entry.title}
-Content: ${entry.content}
-
-Provide only the summary, no extra text.`;
-
-    const result = await model.generateContent(prompt);
-    res.json({ success: true, summary: result.response.text().trim() });
-  } catch (err) {
-    console.error('Summarize error:', err);
-    res.status(500).json({ success: false, error: err.message || 'Failed to summarize' });
-  }
+  const entry = data.entries.find(e => e.id === req.body.entryId);
+  if (!entry) return res.status(404).json({ success:false, error:'Entry not found' });
+  res.json({ success:true, summary:localSummary(entry.content) });
 });
 
 // GET /api/status — health check
