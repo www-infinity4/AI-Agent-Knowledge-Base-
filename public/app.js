@@ -479,7 +479,7 @@ async function generateWithAI() {
       updatePreview();
       showToast('AI generated entry! Review and save.', 'success');
     } else if (res.demo) {
-      showToast('Configure GEMINI_API_KEY to use AI generation', 'info');
+      showToast('Rogers AI is temporarily unavailable.', 'info');
     } else {
       showToast(res.error || 'Generation failed', 'error');
     }
@@ -542,7 +542,7 @@ async function sendChat(message) {
       document.getElementById('totalChats').textContent = state.chatCount;
       appendMessage('assistant', responseText, res.groundingChunks || []);
     } else if (res.demo) {
-      appendMessage('assistant', `⚠️ **Gemini API not configured**\n\nTo use the AI chat, please:\n1. Get an API key from [Google AI Studio](https://aistudio.google.com/app/apikey)\n2. Create a \`.env\` file with: \`GEMINI_API_KEY=your_key_here\`\n3. Restart the server\n\nThe knowledge base features work without an API key!`);
+      appendMessage('assistant', 'Rogers AI is temporarily unavailable. Your saved knowledge base remains available.');
     } else {
       appendMessage('assistant', `❌ Error: ${res.error}`);
     }
