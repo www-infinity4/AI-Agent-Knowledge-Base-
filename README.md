@@ -1,18 +1,16 @@
 # Infinity Knowledge Base — AI Agent
 
-A full-stack AI-powered knowledge management system built with **Google Gemini 2.0 Flash**, Node.js/Express, and a modern dark-themed UI.
+A full-stack knowledge management system with local knowledge synthesis, Node.js/Express, and a modern dark-themed UI. It requires no paid AI API, signup, credit card, or provider key.
 
-![Infinity Knowledge Base](https://img.shields.io/badge/Powered%20by-Gemini%202.0%20Flash-blue?style=flat-square&logo=google)
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green?style=flat-square&logo=node.js)
 ![License](https://img.shields.io/badge/License-MIT-purple?style=flat-square)
 
 ## ✨ Features
 
 - **📚 Knowledge Base Management** — Add, edit, delete, and search knowledge entries with categories and tags
-- **🤖 AI Chat Agent** — Chat with your personal Gemini-powered AI that has full access to your knowledge base
-- **✨ AI Entry Generation** — Generate comprehensive knowledge entries from any topic using Gemini
+- **🤖 Local Knowledge Agent** — Ask questions against your saved knowledge base without an external AI service
+- **✨ Local Entry Drafting** — Start structured entries locally from any topic
 - **🔍 AI Summarization** — Instantly summarize any knowledge entry with one click
-- **🌐 Web Search Grounding** — Enable real-time web search in AI responses for up-to-date information
 - **📊 Dashboard** — Visual overview with stats, recent entries, category breakdown, and quick AI chat
 - **🏷️ Tags & Categories** — Organize knowledge with flexible tagging and categorization
 - **👁️ Entry Viewer** — Rich markdown rendering with view tracking
@@ -23,7 +21,6 @@ A full-stack AI-powered knowledge management system built with **Google Gemini 2
 ### Prerequisites
 
 - Node.js 18+
-- A Google Gemini API key ([Get one free](https://aistudio.google.com/app/apikey))
 
 ### Installation
 
@@ -35,10 +32,6 @@ cd AI-Agent-Knowledge-Base-
 # Install dependencies
 npm install
 
-# Configure your API key
-cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
-
 # Start the server
 npm start
 ```
@@ -47,19 +40,17 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Environment Variables
 
-Create a `.env` file (copy from `.env.example`):
+Only ordinary server settings are used; no AI provider key is required.
 
 ```env
-GEMINI_API_KEY=your_gemini_api_key_here
 PORT=3000
+NODE_ENV=development
 ```
-
-> **Note:** The knowledge base CRUD features work without an API key. Only AI chat, generation, and summarization require `GEMINI_API_KEY`.
 
 ## 🏗️ Architecture
 
 ```
-├── server.js              # Express backend + Gemini API integration
+├── server.js              # Express backend + local knowledge synthesis
 ├── public/
 │   ├── index.html         # Single-page application HTML
 │   ├── styles.css         # Dark theme CSS with animations
@@ -79,17 +70,14 @@ PORT=3000
 | `POST` | `/api/knowledge` | Create a new entry |
 | `PUT` | `/api/knowledge/:id` | Update an entry |
 | `DELETE` | `/api/knowledge/:id` | Delete an entry |
-| `POST` | `/api/chat` | Send a message to Gemini AI |
+| `POST` | `/api/chat` | Search and synthesize the local knowledge base |
 | `POST` | `/api/chat/generate` | Generate a knowledge entry with AI |
 | `POST` | `/api/chat/summarize` | Summarize an entry with AI |
 | `GET` | `/api/status` | Server health check |
 
-## 🤖 Gemini Tools Used
+## 🤖 Local synthesis
 
-- **`gemini-2.0-flash`** — Fast, capable model for chat and generation
-- **Google Search Grounding** — Real-time web search in AI responses
-- **Function Calling** — Structured JSON generation for entry creation
-- **Multi-turn Chat** — Persistent conversation history with knowledge base context
+Chat, drafting, and summarization run from the saved knowledge entries. No external model account, API key, billing relationship, or card is required.
 
 ## 📸 Screenshots
 
@@ -102,7 +90,7 @@ The app features a sleek dark interface with:
 ## 🛠️ Tech Stack
 
 - **Backend:** Node.js, Express.js
-- **AI:** Google Gemini API (`@google/generative-ai`)
+- **AI:** Local deterministic knowledge synthesis
 - **Frontend:** Vanilla HTML/CSS/JavaScript (no framework, zero build step)
 - **Storage:** JSON file-based persistence
 - **Fonts:** Inter + Space Grotesk
